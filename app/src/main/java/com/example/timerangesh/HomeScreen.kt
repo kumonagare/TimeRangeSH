@@ -36,13 +36,13 @@ fun HomeScreen() {
     //---------------------各入力フィールドのラベル---------------------
     val timeText = arrayOf("開始時刻", "終了時刻", "検索時刻")
 
-    //---------------------入力値を保持するための状態---------------------
+    //---------------------入力値を保持する状態---------------------
     val inputValues = rememberSaveable { mutableStateOf(Triple("", "", "")) }
-    //---------------------検索結果を表示するかどうかを制御するための状態---------------------
+    //---------------------検索結果表示の状態---------------------
     val showResult = rememberSaveable { mutableStateOf(false) }
-    //---------------------結果が保存されたかどうかを示すフラグ---------------------
+    //---------------------結果が保存されたかのフラグ---------------------
     val resultSaved = rememberSaveable { mutableStateOf(false) }
-    //---------------------各フィールドのエラーメッセージを保持するための状態---------------------
+    //---------------------各フィールドのエラーメッセージ---------------------
     val errorMessages = rememberSaveable { mutableStateOf(mapOf<Int, String>()) }
 
     val context = LocalContext.current
@@ -51,11 +51,11 @@ fun HomeScreen() {
     fun clearInputs() {
         inputValues.value = Triple("", "", "")
         showResult.value = false // 検索結果を非表示
-        resultSaved.value = false // クリア時に保存フラグもリセット
-        errorMessages.value = mapOf()
+        resultSaved.value = false // 保存フラグをリセット
+        errorMessages.value = mapOf() // エラーメッセージをリセット
     }
 
-    //---------------------入力値の検証を行う関数---------------------
+    //---------------------入力値の検証関数---------------------
     fun validateInput(index: Int, value: String) {
         val errorMessage = when {
             value.isEmpty() -> null
@@ -77,7 +77,7 @@ fun HomeScreen() {
         }
     }
 
-    //---------------------終了時刻が開始時刻より早くないか検証する関数---------------------
+    //---------------------終了時刻の検証関数---------------------
     fun validateEndTime() {
         val startTime = inputValues.value.first.toIntOrNull() ?: 0
         val endTime = inputValues.value.second.toIntOrNull() ?: 0
@@ -115,13 +115,13 @@ fun HomeScreen() {
                 validateInput(2, searchTime)
             }
         )
-        showResult.value = false  // 検索結果を非表示
+        showResult.value = false // 検索結果を非表示
         resultSaved.value = false // ランダム時刻を設定した際に保存フラグもリセット
     }
 
     //---------------------検索結果を保存する処理---------------------
     LaunchedEffect(showResult.value) {
-        //---------------------検索結果が表示されており、データ保存しておらず、入力値が有効な時に保存可能---------------------
+        //---------------------検索結果が表示されていて、データ保存しておらず、入力値が有効な場合に保存---------------------
         if (showResult.value && !resultSaved.value && areInputsValid()) {
             val startTime = inputValues.value.first
             val endTime = inputValues.value.second
@@ -148,7 +148,7 @@ fun HomeScreen() {
                     verticalArrangement = Arrangement.Top
                 ) {
                     Text("それぞれの時刻を入力して検索、")
-                    Text("又はランダムに時刻を指定して検索してください。")
+                    Text("またはランダムに時刻を指定して検索してください。")
                     Text("検索結果は下に表示されます。")
                     Text("過去の検索結果はDataタブをタップしてください。")
                 }
@@ -314,7 +314,7 @@ fun DisplayResult(value1: String, value2: String, value3: String) {
     val endTime = value2.toIntOrNull() ?: 0
     val searchTime = value3.toIntOrNull() ?: 0
 
-    //---------------------判定処理---------------------
+    //---------------------検索結果の判定---------------------
     val resultMessage = when (searchTime) {
         in startTime..< endTime -> "検索時刻 ($searchTime) は範囲内に含まれます。"
         startTime -> "検索時刻 ($searchTime) は範囲内に含まれます。"
@@ -330,18 +330,18 @@ fun DisplayResult(value1: String, value2: String, value3: String) {
     )
 }
 
-//---------------------ランダムな時刻を生成し、開始時刻、終了時刻、検索時刻を設定する関数---------------------
+//---------------------ランダムな時刻を生成する関数---------------------
 fun generateRandomTimes(
     onStartTimeGenerated: (String) -> Unit,
     onEndTimeGenerated: (String) -> Unit,
     onSearchTimeGenerated: (String) -> Unit
 ) {
     val random = Random.Default
-    //---------------------開始時刻を1〜24の範囲でランダムに生成---------------------
+    //---------------------開始時刻をランダムに生成---------------------
     val startTime = random.nextInt(1, 25)
-    //---------------------終了時刻は開始時刻以上でランダムに生成---------------------
+    //---------------------終了時刻を開始時刻以上でランダムに生成---------------------
     val endTime = random.nextInt(startTime, 25)
-    //---------------------検索時刻を1〜24の範囲でランダムに生成---------------------
+    //---------------------検索時刻をランダムに生成---------------------
     val searchTime = random.nextInt(1, 25)
 
     //---------------------生成した時刻を文字列に変換してコールバックで渡す---------------------
@@ -369,14 +369,14 @@ suspend fun saveSearchResult(
         searchTime = searchTime, // 検索時刻
         contains = contains // 検索時刻が含まれるか
     )
-    searchResultDao.insert(result)
+    searchResultDao.insert(result) // 検索結果をデータベースに挿入
 }
 
 //---------------------現在時刻を取得する関数---------------------
 fun getCurrentDateTime(): String {
-    //---------------------日本時間（JST）に設定されたSimpleDateFormatインスタンスを作成---------------------
+    //---------------------日本時間でのSimpleDateFormatインスタンスを作成---------------------
     val dateFormat = SimpleDateFormat("yyyy-MM-dd\nHH:mm:ss", Locale.JAPAN).apply {
         timeZone = TimeZone.getTimeZone("Asia/Tokyo")
     }
-    return dateFormat.format(Date())
+    return dateFormat.format(Date()) // 現在時刻をフォーマットして返す
 }
