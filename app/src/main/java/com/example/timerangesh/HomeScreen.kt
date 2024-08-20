@@ -126,10 +126,23 @@ fun HomeScreen() {
             val startTime = inputValues.value.first
             val endTime = inputValues.value.second
             val searchTime = inputValues.value.third
-            val contains = searchTime.toIntOrNull() in startTime.toIntOrNull()!!..endTime.toIntOrNull()!!
 
-            saveSearchResult(context, startTime, endTime, searchTime, contains)
-            resultSaved.value = true // データを保存した後にフラグを更新
+            //---------------------startTime と endTime の範囲チェック---------------------
+            val startInt = startTime.toIntOrNull()
+            val endInt = endTime.toIntOrNull()
+            val searchInt = searchTime.toIntOrNull()
+
+            //---------------------startTime と endTime のどちらも非 null であることを保証---------------------
+            if (startInt != null && endInt != null && searchInt != null) {
+                val contains = if (startInt == endInt) {
+                    searchInt == startInt
+                } else {
+                    searchInt in startInt..<endInt
+                }
+
+                saveSearchResult(context, startTime, endTime, searchTime, contains)
+                resultSaved.value = true // データを保存した後にフラグを更新
+            }
         }
     }
 
